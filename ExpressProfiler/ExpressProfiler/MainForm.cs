@@ -1379,16 +1379,17 @@ namespace ExpressProfiler
             }
             using (StringWriter writer = new StringWriter())
             {
-                XmlTextWriter textWriter = new XmlTextWriter(writer) { Formatting = Formatting.Indented,Namespaces = true};
+                XmlTextWriter textWriter = new XmlTextWriter(writer) { Formatting = Formatting.Indented, Namespaces = true };
                 doc.Save(textWriter);
-                string xml = writer.ToString();
-                MemoryStream xmlStream = new MemoryStream();
-                xmlStream.Write(System.Text.Encoding.UTF8.GetBytes(xml), 0, xml.Length);
-                Clipboard.SetData("XML Spreadsheet", xmlStream);
+                byte[] xml = Encoding.UTF8.GetBytes(writer.ToString());
+                using (MemoryStream xmlStream = new MemoryStream())
+                {
+                    xmlStream.Write(xml, 0, xml.Length);
+                    Clipboard.SetData("XML Spreadsheet", xmlStream);
+                }
             }
             MessageBox.Show("Event(s) data copied to clipboard", "Information", MessageBoxButtons.OK,
                             MessageBoxIcon.Information);
-
         }
 
 		private void mnAbout_Click(object sender, EventArgs e)
@@ -1572,31 +1573,30 @@ namespace ExpressProfiler
 				}
 			}
 
-			SaveFileDialog sfd = new SaveFileDialog();
-			sfd.Filter = "Excel XML|*.xml";
-			sfd.Title = "Save the Excel XML FIle";
-			sfd.ShowDialog();
+            string filename = String.Empty;
+            using (SaveFileDialog sfd = new SaveFileDialog())
+            {
+                sfd.Filter = "Excel XML|*.xml";
+                sfd.Title = "Save the Excel XML FIle";
+                if (sfd.ShowDialog() == DialogResult.OK)
+                    filename = sfd.FileName;
+            }
 
-			if (!string.IsNullOrEmpty(sfd.FileName))
-			{
-				using (StringWriter writer = new StringWriter())
-				{
-					XmlTextWriter textWriter = new XmlTextWriter(writer)
-					{
-						Formatting = Formatting.Indented,
-						Namespaces = true
-					};
-					doc.Save(textWriter);
-					string xml = writer.ToString();
-					MemoryStream xmlStream = new MemoryStream();
-					xmlStream.Write(System.Text.Encoding.UTF8.GetBytes(xml), 0, xml.Length);
-					xmlStream.Position = 0;
-					FileStream fs = new FileStream(sfd.FileName, FileMode.Create, FileAccess.Write);
-					xmlStream.WriteTo(fs);
-					fs.Close();
-					xmlStream.Close();
-				}
-				MessageBox.Show(string.Format("File saved to: {0}", sfd.FileName), "Information", MessageBoxButtons.OK,
+            if (!string.IsNullOrEmpty(filename))
+            {
+                using (StringWriter writer = new StringWriter())
+                {
+                    XmlTextWriter textWriter = new XmlTextWriter(writer)
+                    {
+                        Formatting = Formatting.Indented,
+                        Namespaces = true
+                    };
+                    doc.Save(textWriter);
+                    byte[] xml = Encoding.UTF8.GetBytes(writer.ToString());
+                    using (FileStream fs = new FileStream(filename, FileMode.Create, FileAccess.Write))
+                        fs.Write(xml, 0, xml.Length);
+                }
+                MessageBox.Show(string.Format("File saved to: {0}", filename), "Information", MessageBoxButtons.OK,
 					MessageBoxIcon.Information);
 			}
 		}

@@ -138,6 +138,7 @@
 			this.Text = "Find";
 			this.ResumeLayout(false);
 			this.PerformLayout();
+            this.TopMost = true;
 
         }
 

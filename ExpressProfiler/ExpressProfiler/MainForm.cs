@@ -269,6 +269,7 @@ namespace ExpressProfiler
                 MessageBox.Show("You should select at least 1 event", "Starting trace", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 RunProfiling(true);
             }
+            else
             {
                 RunProfiling(false);
             }
